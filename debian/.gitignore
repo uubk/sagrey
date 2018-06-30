@@ -1,0 +1,9 @@
+autoreconf.after
+autoreconf.before
+*.log
+*.substvars
+tmp
+.debhelper
+debhelper-build-stamp
+check-lsi-raid
+files

@@ -1,0 +1,14 @@
+Source: spamassassin-plugin-sagrey
+Section: devel
+Priority: optional
+Maintainer: Maximilian Falkenstein <mfalkenstein@sos.ethz.ch>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+Homepage: https://github.com/uubk/sagrey
+Vcs-Git: https://github.com/uubk/sagrey
+Vcs-Browser: https://github.com/uubk/sagrey
+
+Package: spamassassin-plugin-sagrey
+Architecture: all
+Depends: spamassassin, libnetaddr-ip-perl, libcache-memcached-perl
+Description: Greylist using Memcached inside Spamassassin
