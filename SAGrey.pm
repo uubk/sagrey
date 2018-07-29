@@ -160,7 +160,7 @@ servers found to be greylisting-intolerant.
         type        => $Mail::SpamAssassin::Conf::CONF_TYPE_STRING,
         code        => sub {
             my ($self, $key, $value, $line) = @_;
-            $self->{whitelist_file} = $value;
+            $self->{sagrey_whitelist_file} = $value;
             if (not -e $value) {
                 return $Mail::SpamAssassin::Conf::INVALID_VALUE;
             }
@@ -180,7 +180,7 @@ How long do we want to greylist?
         type        => $Mail::SpamAssassin::Conf::CONF_TYPE_NUMERIC,
         code        => sub {
             my ($self, $key, $value, $line) = @_;
-            $self->{greytime} = $value;
+            $self->{sagrey_time} = $value;
         }
     });
 
@@ -198,7 +198,7 @@ the default value of Memcached's lifetime for new objects created.
         type        => $Mail::SpamAssassin::Conf::CONF_TYPE_NUMERIC,
         code        => sub {
             my ($self, $key, $value, $line) = @_;
-            $self->{exptime} = $value;
+            $self->{sagrey_record_time} = $value;
         }
     });
 
@@ -229,6 +229,8 @@ sub sagrey {
             dprint ("$host is IPv4, truncating to /24");
             $truncated_ip = NetAddr::IP->new($host, "24");
         }
+        $truncated_ip = $truncated_ip->network();
+        dprint ("$host is now $truncated_ip");
     }
 
     my $host_name = $permsgstatus->get_tag('LASTEXTERNALRDNS');
@@ -241,6 +243,9 @@ sub sagrey {
     dprint ("message key\: $key, score: $score");
     # Get server reputation
     my $cnt = $self->{conf}->{memcd}->get("sagrey_$host");
+    if (not defined $cnt) {
+        $cnt = 0;
+    }
 
     my $value = 0;
     my $reason = "";
@@ -288,7 +293,7 @@ sub sagrey {
         # Okay no whitelist reason found, so let's greylist.
         if ($value == 1) {
             iprint ("message was new to TxRep and is not whitelisted, inserting greylist record...");
-            my $time = int($self->{conf}->{greytime});
+            my $time = int($self->{conf}->{sagrey_time});
             # The value is not really used, but we need to set *something*
             $self->{conf}->{memcd}->set($key, "Greylisting for $time seconds",
                 $time);
@@ -316,7 +321,7 @@ sub sagrey {
             } else {
                 $cnt = 1;
             }
-            $self->{conf}->{memcd}->set("sagrey_$host", $cnt, $self->{conf}->{exptime});
+            $self->{conf}->{memcd}->set("sagrey_$host", $cnt, $self->{conf}->{sagrey_record_time});
 
             $value = 0;
         }
@@ -351,7 +356,7 @@ sub read_clients_whitelists($)
 
     my @whitelist_clients = ();
     my @whitelist_ips = ();
-    my $f = $self->{conf}->{whitelist_file};
+    my $f = $self->{conf}->{sagrey_whitelist_file};
     if(open(CLIENTS, $f)) {
         while(<CLIENTS>) {
             s/#.*$//; s/^\s+//; s/\s+$//; next if $_ eq '';
