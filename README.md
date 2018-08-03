@@ -5,7 +5,7 @@ Greylisting in Spamassassin using memcached.
 Greylisting works by tempfailing a mail on the first delivery attempt and
 accepting it on a later attempt, trying to destinguish between real mailservers
 (which will retry the delivery) and spambots.
-Traditionally, software like (postgrey)[https://postgrey.schweikert.ch/] is used
+Traditionally, software like [postgrey](https://postgrey.schweikert.ch/) is used
 for this, however, they often do not take things like sender reputation into
 account and are diffucult to use across multiple mailservers.
 SAGrey works around this by
