@@ -219,9 +219,25 @@ sub sagrey {
     my $host = $permsgstatus->get_tag('LASTEXTERNALIP');
 
     my $ip = NetAddr::IP->new($host);
+    my $truncated_ip = $ip;
+    if (defined $ip) {
+        if ($ip->version() == 6) {
+            dprint ("$host is IPv6, truncating to /56");
+            $truncated_ip = NetAddr::IP->new6($host, "56");
+        }
+        else {
+            dprint ("$host is IPv4, truncating to /24");
+            $truncated_ip = NetAddr::IP->new($host, "24");
+        }
+        $truncated_ip = $truncated_ip->network();
+        dprint ("$host is now $truncated_ip");
+    }
 
     my $host_name = $permsgstatus->get_tag('LASTEXTERNALRDNS');
     my $key = $from . "src" . $host_name;
+    #if (defined $truncated_ip) {
+    #    $key = $from . "src" . $truncated_ip->cidr();
+    #}
     # Score is the SA score so far
     my $score = $permsgstatus->get_hits();
     dprint ("message key\: $key, score: $score");

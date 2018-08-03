@@ -1,0 +1,10 @@
+Package: spamassassin-plugin-sagrey
+Version: 0.1-2
+Architecture: all
+Maintainer: Maximilian Falkenstein <mfalkenstein@sos.ethz.ch>
+Installed-Size: 27
+Depends: spamassassin, libnetaddr-ip-perl, libcache-memcached-perl
+Section: devel
+Priority: optional
+Homepage: https://github.com/uubk/sagrey
+Description: Greylist using Memcached inside Spamassassin
