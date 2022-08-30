@@ -1,0 +1,34 @@
+variables:
+  DISTRIBUTION_VER: "bullseye"
+  CI_APT_PREFIX: "bullseye"
+  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_SSL_CAPATH: /etc/ssl/certs
+
+image: docker.git.sos.ethz.ch/isg/debian-ci-base:$DISTRIBUTION_VER
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  before_script:
+    - apt update
+    - apt-get --assume-yes -qq install build-essential dh-dist-zilla spamassassin libnetaddr-ip-perl libcache-memcached-perl
+  script:
+    - dpkg-buildpackage -uc -us
+    - mv ../spam*.deb .
+  artifacts:
+    paths:
+    - '*.deb'
+
+deploy_to_apt:
+  stage: deploy
+  script:
+    - echo "Deploying package to $CI_APT_PREFIX prefix and $DISTRIBUTION_VER version"
+    - sudo -u repo aptly repo add sos-$CI_APT_REPO *.deb
+    - sudo -u repo aptly publish update $DISTRIBUTION_VER $CI_APT_PREFIX
+  only:
+    - tags
+  tags:
+    - apt
