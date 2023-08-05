@@ -1,6 +1,6 @@
 variables:
-  DISTRIBUTION_VER: "bullseye"
-  CI_APT_PREFIX: "bullseye"
+  DISTRIBUTION_VER: "bookworm"
+  CI_APT_PREFIX: "bookworm"
   GIT_SUBMODULE_STRATEGY: recursive
   GIT_SSL_CAPATH: /etc/ssl/certs
 
